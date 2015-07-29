@@ -1,0 +1,5 @@
+# VS2010
+*.exe
+*.pdb
+*.vshost.*
+obj
