@@ -10,21 +10,36 @@ using StockMarket.Utils;
 
 namespace StockMarket.UI
 {
-    public class NewsPanel : CommonPanel
+    public class NewsPanel : TableViewPanel
     {
+        private static Int16 FONT_SIZE = 10;
+
         public NewsPanel(List<Links> news)
         {
-            StockIndexTable.ColumnCount = 1;
+            if (news.Count == 0)
+                return;
+            this.RowCount = news.Count + 1;
+            this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
 
-            foreach (Links title in news)
+            for (int i = 0; i <= 20; i++)
             {
+                Single percent = FONT_SIZE + 8;
+                this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, percent));
+            }
+
+            //foreach (Links title in news)
+            for (int i = 0; i <= 20; i++)
+            {
+                Links title = news[0];
                 if (title.Title != null && title.Title.Length > 0)
                 {
                     HyperlinkLabel label = new HyperlinkLabel(title);
-                    this.Font = new Font("宋体", 10, this.Font.Style);
-                    label.Dock = DockStyle.Fill;
+                    label.TextAlign = ContentAlignment.BottomLeft;
+                    label.Font = new Font("宋体", FONT_SIZE, this.Font.Style);
+                    label.Padding = new System.Windows.Forms.Padding(1, 3, 3, 1);
+                    label.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Bottom;
                     label.LinkClicked += new LinkLabelLinkClickedEventHandler(this.HyperlinkLabel_LinkClicked);
-                    StockIndexTable.Controls.Add(label);
+                    this.Controls.Add(label);
                 }
             }
         }

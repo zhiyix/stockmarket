@@ -9,7 +9,7 @@ using StockMarket.Model;
 
 namespace StockMarket.UI
 {
-    public class StockPanel : CommonPanel
+    public class StockPanel : TableViewPanel
     {
         private bool debug = true;
 
@@ -20,32 +20,24 @@ namespace StockMarket.UI
 
         #region UI
         private TextBox stockText = new TextBox();
-        private ListView stockList = new ListView();
+        private StockListView stockList = new StockListView();
         private ListViewColumnSorter lvwColumnSorter;
         #endregion
 
         #region DATA
-        private string p;
-        private static int STOCK_CODE_LEN = 6;
+        private static Int16 STOCK_CODE_LEN = 6;
+        private static Int16 COLUMNS = 1;
+        private static Int16 ROWS = 2;
         #endregion
 
-        public StockPanel(string p)
+        public StockPanel()
+            : base(COLUMNS, ROWS)
         {
-            this.p = p;
-            StockIndexTable.ColumnCount = 1;
-
             // 创建一个ListView排序类的对象，并设置listView1的排序器
             lvwColumnSorter = new ListViewColumnSorter(0);
             stockList.ListViewItemSorter = lvwColumnSorter;
-
-            stockList.Dock = DockStyle.Fill;
-            stockList.View = View.Details;
-            stockList.LabelEdit = false;
             stockList.CheckBoxes = true;
-            stockList.AllowColumnReorder = true;
-            stockList.FullRowSelect = true;
-            stockList.GridLines = true;
-            stockList.Sorting = SortOrder.Ascending;
+
             // Create columns for the items and subitems.
             // Width of -2 indicates auto-size.
             stockList.Columns.Add("股票代码", -2, HorizontalAlignment.Left);
@@ -148,7 +140,11 @@ namespace StockMarket.UI
                             }
                             else
                             {
-
+                                SmpStock stock = new SmpStock("", splits[0]);
+                                StockChanged_CallBack(stock);
+                                stockText.TextChanged -= new EventHandler(StockText_TextChanged_EventHandler);
+                                textBox.Clear();
+                                stockText.TextChanged += new EventHandler(StockText_TextChanged_EventHandler);
                             }
                             //textBox.SelectionStart = textBox.Text.Length;
                         }
@@ -159,7 +155,7 @@ namespace StockMarket.UI
 
         private void StockChanged_CallBack(SmpStock stock)
         {
-            if (stock != null && stock.Code.Length == STOCK_CODE_LEN)
+            if (stock != null)
             {
                 StockChangedEventArgs args = new StockChangedEventArgs(stock);
                 OnStockChanged(args);
@@ -199,7 +195,7 @@ namespace StockMarket.UI
         #region UI界面数据更新函数
         public void InitData(List<SmpStock> stocks)
         {
-            InitTableComp(StockIndexTable);
+            InitTableComp(this);
             InitListData(stockList, stocks);
         }
 
@@ -211,7 +207,7 @@ namespace StockMarket.UI
         private void InitTableComp(TableLayoutPanel table)
         {
             Label stockTip = new Label();
-            stockTip.Text = "请在如下提示框内输入股票代码：";
+            stockTip.Text = "请在提示框内输入股票代码或名称：";
             stockTip.AutoSize = true;
             table.RowStyles.Clear();
             table.RowStyles.Add(new RowStyle(SizeType.Absolute, 23));

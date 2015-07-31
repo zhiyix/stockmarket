@@ -12,7 +12,7 @@ using StockMarket.Utils;
 
 namespace StockMarket.UI
 {
-    public partial class LoginDialog : Form
+    public partial class DialogLogin : Form
     {
         private bool debug = false;
 
@@ -36,7 +36,7 @@ namespace StockMarket.UI
         private LoginFSM loginFSMState = LoginFSM.LOGIN_FSM_INIT;
         private Int16 loginDelay;
 
-        public LoginDialog()
+        public DialogLogin()
         {
             InitializeComponent();
 
@@ -113,7 +113,7 @@ namespace StockMarket.UI
                     ShowAPI.setAppSection(apiSection);
                     if (ShowAPI.getMarketIndex() != null)
                     {
-                        loginDelay = 5;
+                        loginDelay = 3;
                         loginFSMState = LoginFSM.LOGIN_FSM_LOGINING;
                     }
                     else

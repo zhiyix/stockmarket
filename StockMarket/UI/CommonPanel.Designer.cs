@@ -30,23 +30,24 @@ namespace StockMarket.UI
         /// </summary>
         private void InitializeComponent()
         {
-            this.StockIndexTable = new System.Windows.Forms.TableLayoutPanel();
+            this.TableView = new System.Windows.Forms.TableLayoutPanel();
             this.SuspendLayout();
             // 
-            // StockIndexTable
+            // TableView
             // 
-            this.StockIndexTable.ColumnCount = 2;
-            this.StockIndexTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.StockIndexTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.StockIndexTable.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.StockIndexTable.Location = new System.Drawing.Point(0, 0);
-            this.StockIndexTable.Name = "StockIndexTable";
-            this.StockIndexTable.RowCount = 10;
-            this.StockIndexTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.StockIndexTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.StockIndexTable.Size = new System.Drawing.Size(284, 262);
-            this.StockIndexTable.TabIndex = 0;
-            this.StockIndexTable.RowStyles.Clear();
+            this.TableView.ColumnCount = 1;
+            //this.TableView.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            //this.TableView.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TableView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TableView.Location = new System.Drawing.Point(0, 0);
+            this.TableView.Name = "TableView";
+            this.TableView.RowCount = 1;
+            //this.TableView.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            //this.TableView.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TableView.Size = new System.Drawing.Size(284, 262);
+            this.TableView.TabIndex = 0;
+            this.TableView.AutoScroll = true;
+            this.TableView.RowStyles.Clear();
 
             // 
             // StockIndexPanel
@@ -54,7 +55,7 @@ namespace StockMarket.UI
             //this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             //this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 262);
-            this.Controls.Add(this.StockIndexTable);
+            this.Controls.Add(this.TableView);
             //this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "StockIndexPanel";
             this.Text = "StockIndexPanel";
@@ -65,6 +66,6 @@ namespace StockMarket.UI
 
         #endregion
 
-        public System.Windows.Forms.TableLayoutPanel StockIndexTable;
+        public System.Windows.Forms.TableLayoutPanel TableView;
     }
 }

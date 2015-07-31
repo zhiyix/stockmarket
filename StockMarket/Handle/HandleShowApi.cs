@@ -15,7 +15,7 @@ namespace StockMarket.Handle
     public class HandleShowApi
     {
         private static bool debug = false;
-        private const int SLEEP_INTERVAL = 100;
+        private const Int16 SLEEP_INTERVAL = 50;
         private bool bgWorkedError = false;
 
         #region UI
@@ -66,6 +66,7 @@ namespace StockMarket.Handle
             //Pass through serial port to background worker
             Hashtable workerOptions = new Hashtable();
             workerOptions.Add("mode", sas.Mode);
+            workerOptions.Add("time", SLEEP_INTERVAL);
             workerOptions.Add("code", sas.Codes);
             workerOptions.Add("data", "");
 
@@ -96,6 +97,7 @@ namespace StockMarket.Handle
         {
             ApiState sas = new ApiState();
             double totalTime = 0;
+            Int16 delay_time_ms = 100;
             List<StockType> stringResults = new List<StockType>();
 
             //Clear any errors
@@ -113,6 +115,7 @@ namespace StockMarket.Handle
             bgWorker.ReportProgress(12, (List<String>)workeroptions["code"]); // "参数: "
             bgWorker.ReportProgress(13, (string)workeroptions["data"]); // "数据:" 
 
+            delay_time_ms = (Int16)workeroptions["time"];
             sas.Mode = (Int16)workeroptions["mode"];
             sas.Codes = (List<String>)workeroptions["code"];
             try
@@ -154,14 +157,14 @@ namespace StockMarket.Handle
                     if (!bgWorker.CancellationPending)
                     {
                         //Wait 100 ms before checking for more data
-                        Thread.Sleep(SLEEP_INTERVAL); 
+                        Thread.Sleep(delay_time_ms); 
                     }
                     else
                     {
                         break;
                     }
                 }
-                Thread.Sleep(SLEEP_INTERVAL);
+                Thread.Sleep(delay_time_ms);
                 bgWorker.ReportProgress(99, totalTime);
                 bgWorker.ReportProgress(100, stringResults);
             }

@@ -1,6 +1,6 @@
 ﻿namespace StockMarket.UI
 {
-    partial class LoginDialog
+    partial class DialogLogin
     {
         /// <summary>
         /// Required designer variable.

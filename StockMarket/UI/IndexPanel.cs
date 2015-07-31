@@ -10,7 +10,7 @@ using StockMarket.Model;
 
 namespace StockMarket.UI
 {
-    public class IndexPanel : CommonPanel
+    public class IndexPanel : TableViewPanel
     {
         private bool debug = false;
 
@@ -18,6 +18,7 @@ namespace StockMarket.UI
         public event EventHandler<IndexEventArgs> IndexItemChanged;
         private ComboBox indexCombo = new ComboBox();
         private List<Label> indexLabels = new List<Label>();
+        private ToolTip tooltip;
         #endregion
 
         #region DATA
@@ -30,15 +31,19 @@ namespace StockMarket.UI
         private String[] arr_IndexItems = new String[] {
             "指数名称",
             "指数编码",
-            "今日开盘价",
-            "昨日收盘价",
-            "当前价",
-            "最高价",
-            "最低价",
-            "成交量",
+            "今开盘价",
+            "昨收盘价",
+            "实时价格",
+            "涨 跌 幅",
+            "最高价格",
+            "最低价格",
+            "成交均价",
+            "成 交 量",
             "成交金额",
             "刷新时间",
         };
+        private static Int16 COLUMNS = 2;
+        private static Int16 ROWS = 1;
         #endregion
 
         #region 属性
@@ -47,6 +52,7 @@ namespace StockMarket.UI
         #endregion
 
         public IndexPanel()
+            : base(COLUMNS, ROWS)
         {
             indexCombo.Items.Clear();
             indexCombo.Items.AddRange(IndexNames);
@@ -54,27 +60,50 @@ namespace StockMarket.UI
             indexCombo.SelectedIndexChanged +=
                 new EventHandler(TabControl_Window_SelectedIndexChanged_EventHandler);
 
-            StockIndexTable.ColumnCount = 2;
-            StockIndexTable.Controls.Clear();
+            this.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
+            this.Controls.Clear();
 
             foreach (string name in arr_IndexItems)
             {
                 Label label1 = new Label();
                 Label label2 = new Label();
+
                 label1.Text = name;
                 indexLabels.Add(label1);
-                StockIndexTable.Controls.Add(label1);
+                this.Controls.Add(label1);
                 if (name.Equals(@"指数名称", StringComparison.CurrentCultureIgnoreCase))
                 {
                     indexLabels.Add(label2);
-                    StockIndexTable.Controls.Add(indexCombo);
+                    this.Controls.Add(indexCombo);
                     continue;
                 }
                 else
                 {
                     label2.Text = "-";
+                    label2.MouseHover += new EventHandler(Labels_MouseHover);
                     indexLabels.Add(label2);
-                    StockIndexTable.Controls.Add(label2);
+                    this.Controls.Add(label2);
+                }
+            }
+            this.tooltip = new ToolTip();
+            this.tooltip.AutoPopDelay = 5000;
+            this.tooltip.InitialDelay = 1000;
+            this.tooltip.ReshowDelay = 500;
+            this.tooltip.ShowAlways = true;
+        }
+
+        void Labels_MouseHover(object sender, EventArgs e)
+        {
+            if (sender is Label)
+            {
+                Label label = (Label)sender;
+                if (label.Tag != null)
+                {
+                    LabelTip obj = (LabelTip)label.Tag;
+                    //this.tooltip.SetToolTip(label, obj.ToString());
+                    this.tooltip.ForeColor = obj.ForeColor;
+                    this.tooltip.Show(obj.ToString(), label);
                 }
             }
         }
@@ -129,7 +158,7 @@ namespace StockMarket.UI
         #region UI界面数据更新函数
         public void UpdateData()
         {
-            updateTableData(StockIndexTable);
+            updateTableData(this);
         }
         
         private void updateTableData(TableLayoutPanel table)
@@ -147,18 +176,7 @@ namespace StockMarket.UI
                         if (ie.MoveNext())
                         {
                             Label label2 = (Label)ie.Current;
-                            if (idx.NowPrice > idx.YestodayClosePrice)
-                            {
-                                label2.ForeColor = Color.Red;
-                            }
-                            else if (idx.NowPrice < idx.YestodayClosePrice)
-                            {
-                                label2.ForeColor = Color.Green;
-                            }
-                            else
-                            {
-                                label2.ForeColor = SystemColors.ControlText;
-                            }
+
                             if (name.Equals(@"指数名称", StringComparison.CurrentCultureIgnoreCase))
                             {
                                 //table.Controls.Add(indexCombo);
@@ -168,43 +186,65 @@ namespace StockMarket.UI
                             }
                             else if (name.Equals(@"指数编码", StringComparison.CurrentCultureIgnoreCase))
                             {
-                                label2.ForeColor = SystemColors.ControlText;
                                 label2.Text = idx.Code;
                             }
-                            else if (name.Equals(@"当前价", StringComparison.CurrentCultureIgnoreCase))
+                            else if (name.Equals(@"实时价格", StringComparison.CurrentCultureIgnoreCase))
                             {
+                                label2.ForeColor = calcColor(idx.NowPrice, idx.YestodayClosePrice);
                                 label2.Text = idx.NowPrice.ToString("F", CultureInfo.InvariantCulture);
+                                label2.Tag = new LabelTip(
+                                    String.Format("{0:F2}%", (idx.NowPrice - idx.YestodayClosePrice) * 100 / idx.YestodayClosePrice), 
+                                    label2.ForeColor);
                             }
-                            else if (name.Equals(@"昨日收盘价", StringComparison.CurrentCultureIgnoreCase))
+                            else if (name.Equals(@"涨 跌 幅", StringComparison.CurrentCultureIgnoreCase))
                             {
-                                label2.ForeColor = SystemColors.ControlText;
+                                label2.ForeColor = calcColor(idx.NowPrice, idx.YestodayClosePrice);
+                                label2.Text = String.Format("{0:F2}%({1:F2})",
+                                    (idx.NowPrice - idx.YestodayClosePrice) * 100 / idx.YestodayClosePrice,
+                                    (idx.NowPrice - idx.YestodayClosePrice));
+                            }
+                            else if (name.Equals(@"昨收盘价", StringComparison.CurrentCultureIgnoreCase))
+                            {
                                 label2.Text = idx.YestodayClosePrice.ToString("F", CultureInfo.InvariantCulture);
                             }
-                            else if (name.Equals(@"今日开盘价", StringComparison.CurrentCultureIgnoreCase))
+                            else if (name.Equals(@"今开盘价", StringComparison.CurrentCultureIgnoreCase))
                             {
+                                label2.ForeColor = calcColor(idx.TodayOpenPrice, idx.YestodayClosePrice);
                                 label2.Text = idx.TodayOpenPrice.ToString("F", CultureInfo.InvariantCulture);
+                                label2.Tag = new LabelTip(
+                                    String.Format("{0:F2}%", (idx.TodayOpenPrice - idx.YestodayClosePrice) * 100 / idx.YestodayClosePrice),
+                                    label2.ForeColor);
                             }
-                            else if (name.Equals(@"最高价", StringComparison.CurrentCultureIgnoreCase))
+                            else if (name.Equals(@"最高价格", StringComparison.CurrentCultureIgnoreCase))
                             {
+                                label2.ForeColor = calcColor(idx.MaxPrice, idx.YestodayClosePrice);
                                 label2.Text = idx.MaxPrice.ToString("F", CultureInfo.InvariantCulture);
+                                label2.Tag = new LabelTip(
+                                    String.Format("{0:F2}%", (idx.MaxPrice - idx.YestodayClosePrice) * 100 / idx.YestodayClosePrice),
+                                    label2.ForeColor);
                             }
-                            else if (name.Equals(@"最低价", StringComparison.CurrentCultureIgnoreCase))
+                            else if (name.Equals(@"最低价格", StringComparison.CurrentCultureIgnoreCase))
                             {
+                                label2.ForeColor = calcColor(idx.MinPrice, idx.YestodayClosePrice);
                                 label2.Text = idx.MinPrice.ToString("F", CultureInfo.InvariantCulture);
+                                label2.Tag = new LabelTip(
+                                    String.Format("{0:F2}%", (idx.MinPrice - idx.YestodayClosePrice) * 100 / idx.YestodayClosePrice),
+                                    label2.ForeColor);
                             }
-                            else if (name.Equals(@"成交量", StringComparison.CurrentCultureIgnoreCase))
+                            else if (name.Equals(@"成交均价", StringComparison.CurrentCultureIgnoreCase))
                             {
-                                label2.ForeColor = SystemColors.ControlText;
-                                label2.Text = idx.TradeNum.ToString("N", CultureInfo.InvariantCulture);
+                                label2.Text = String.Format("{0:F2}", (idx.TradeAmount) / idx.TradeNum);
+                            }
+                            else if (name.Equals(@"成 交 量", StringComparison.CurrentCultureIgnoreCase))
+                            {
+                                label2.Text = idx.TradeNum.ToString("N0", CultureInfo.InvariantCulture);
                             }
                             else if (name.Equals(@"成交金额", StringComparison.CurrentCultureIgnoreCase))
                             {
-                                label2.ForeColor = SystemColors.ControlText;
                                 label2.Text = idx.TradeAmount.ToString("N2", CultureInfo.InvariantCulture);
                             }
                             else if (name.Equals(@"刷新时间", StringComparison.CurrentCultureIgnoreCase))
                             {
-                                label2.ForeColor = SystemColors.ControlText;
                                 if (table.Width > 200)
                                 {
                                     label2.Text = idx.Time.ToString("G", DateTimeFormatInfo.InvariantInfo);
@@ -217,65 +257,6 @@ namespace StockMarket.UI
                             }
                         }
                     }
-                    /*
-                    foreach (Label label in this.indexLabels)
-                    {
-                        Label label1 = new Label();
-                        Label label2 = new Label();
-                        label1.Text = name;
-                        table.Controls.Add(label1);
-                        if (name.Equals(@"指数名称", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            table.Controls.Add(indexCombo);
-                            indexCombo.SelectedIndexChanged += new EventHandler(TabControl_Window_SelectedIndexChanged_EventHandler);
-                            continue;
-                        }
-                        else if (name.Equals(@"指数编码", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            label2.Text = idx.Code;
-                        }
-                        else if (name.Equals(@"当前价", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            label2.Text = idx.NowPrice.ToString("F", CultureInfo.InvariantCulture);
-                        }
-                        else if (name.Equals(@"昨日收盘价", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            label2.Text = idx.YestodayClosePrice.ToString("F", CultureInfo.InvariantCulture);
-                        }
-                        else if (name.Equals(@"今日开盘价", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            label2.Text = idx.TodayOpenPrice.ToString("F", CultureInfo.InvariantCulture);
-                        }
-                        else if (name.Equals(@"最高价", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            label2.Text = idx.MaxPrice.ToString("F", CultureInfo.InvariantCulture);
-                        }
-                        else if (name.Equals(@"最低价", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            label2.Text = idx.MinPrice.ToString("F", CultureInfo.InvariantCulture);
-                        }
-                        else if (name.Equals(@"成交量", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            label2.Text = idx.TradeNum.ToString("N", CultureInfo.InvariantCulture);
-                        }
-                        else if (name.Equals(@"成交金额", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            label2.Text = idx.TradeAmount.ToString("N2", CultureInfo.InvariantCulture);
-                        }
-                        else if (name.Equals(@"刷新时间", StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            if (table.Width > 200)
-                            {
-                                label2.Text = idx.Time.ToString("G", DateTimeFormatInfo.InvariantInfo);
-                            }
-                            else
-                            {
-                                label2.Text = idx.Time.ToString("d");
-                            }
-                            label2.AutoSize = true;
-                        }
-                        table.Controls.Add(label2);
-                    }*/
                 }
             }
             if (debug)
@@ -285,6 +266,37 @@ namespace StockMarket.UI
             }
         }
         #endregion
+
+        private Color calcColor(double first, double second)
+        {
+            if (first > second)
+            {
+                return Color.Red;
+            }
+            else {
+                return Color.Green;
+            }
+        }
+    }
+
+    public class LabelTip
+    {
+        private String info;
+        private Color color;
+
+        public LabelTip(string p, Color color)
+        {
+            this.Info = p;
+            this.color = color;
+        }
+
+        public String Info { get { return info; } set { info = value; } }
+        public Color ForeColor { get { return color; } set { color = value; } }
+
+        public override string ToString()
+        {
+            return info;
+        }
     }
 
     // FireEventArgs: a custom event inherited from EventArgs.
